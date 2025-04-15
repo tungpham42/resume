@@ -92,6 +92,9 @@ const translations = {
     name: "Name",
     issuer: "Issuer",
     date: "Date",
+    resumeLanguage: "Language",
+    english: "English",
+    vietnamese: "Vietnamese",
   },
   vi: {
     signIn: "Đăng Nhập",
@@ -184,6 +187,9 @@ const translations = {
     name: "Tên",
     issuer: "Người Cấp",
     date: "Ngày",
+    resumeLanguage: "Ngôn Ngữ",
+    english: "Tiếng Anh",
+    vietnamese: "Tiếng Việt",
   },
 };
 
@@ -202,8 +208,13 @@ export const LanguageProvider = ({ children }) => {
 
   const t = (key) => translations[language][key] || key;
 
+  // Function to get translations for a specific language
+  const getTranslation = (lang, key) => translations[lang][key] || key;
+
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider
+      value={{ language, setLanguage, t, getTranslation }}
+    >
       {children}
     </LanguageContext.Provider>
   );

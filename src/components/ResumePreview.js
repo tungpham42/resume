@@ -21,7 +21,7 @@ import templateStyles from "./Styles";
 import { useLanguage } from "../context/LanguageContext";
 
 const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
-  const { t } = useLanguage();
+  const { t, getTranslation } = useLanguage();
   const { resumeId } = useParams();
   const navigate = useNavigate();
   const [resume, setResume] = useState(resumeProp);
@@ -120,7 +120,7 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
         heightLeft -= pageHeight;
       }
 
-      pdf.save(`${resume.title || "resume"}.pdf`);
+      pdf.save(`${resume.title || rt("resumeTitle")}.pdf`);
       setAlert({
         show: true,
         message: t("downloadAsPDF"),
@@ -139,6 +139,9 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
   const toggleVisibility = useCallback((section) => {
     setVisibility((prev) => ({ ...prev, [section]: !prev[section] }));
   }, []);
+
+  // Resume-specific translation function
+  const rt = (key) => getTranslation(resume.language || "en", key);
 
   if (loading) {
     return (
@@ -184,7 +187,7 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
             <Form.Check
               key={section}
               type="checkbox"
-              label={t(section)}
+              label={rt(section)}
               checked={visibility[section]}
               onChange={() => toggleVisibility(section)}
             />
@@ -201,33 +204,34 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
       >
         <Card.Body>
           <h1 style={selectedTemplate.title}>
-            {resume.title || t("resumeTitle")}
+            {resume.title || rt("resumeTitle")}
           </h1>
           {visibility.personalInfo && (
             <div style={selectedTemplate.section}>
               <h5 style={selectedTemplate.heading}>
                 <FontAwesomeIcon icon={faUser} className="me-2" />
-                {t("personalInfo")}
+                {rt("personalInfo")}
               </h5>
               <p style={selectedTemplate.text}>
-                <strong>{t("fullName")}:</strong> {resume.personalInfo.name}
+                <strong>{rt("fullName")}:</strong> {resume.personalInfo.name}
               </p>
               <p style={selectedTemplate.text}>
-                <strong>{t("email")}:</strong> {resume.personalInfo.email}
+                <strong>{rt("email")}:</strong> {resume.personalInfo.email}
               </p>
               {resume.personalInfo.phone && (
                 <p style={selectedTemplate.text}>
-                  <strong>{t("phone")}:</strong> {resume.personalInfo.phone}
+                  <strong>{rt("phone")}:</strong> {resume.personalInfo.phone}
                 </p>
               )}
               {resume.personalInfo.address && (
                 <p style={selectedTemplate.text}>
-                  <strong>{t("address")}:</strong> {resume.personalInfo.address}
+                  <strong>{rt("address")}:</strong>{" "}
+                  {resume.personalInfo.address}
                 </p>
               )}
               {resume.personalInfo.website && (
                 <p style={selectedTemplate.text}>
-                  <strong>{t("website")}:</strong>{" "}
+                  <strong>{rt("website")}:</strong>{" "}
                   <a href={resume.personalInfo.website}>
                     {resume.personalInfo.website}
                   </a>
@@ -235,7 +239,7 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
               )}
               {resume.personalInfo.linkedin && (
                 <p style={selectedTemplate.text}>
-                  <strong>{t("linkedin")}:</strong>{" "}
+                  <strong>{rt("linkedin")}:</strong>{" "}
                   <a href={resume.personalInfo.linkedin}>
                     {resume.personalInfo.linkedin}
                   </a>
@@ -247,7 +251,7 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
             <div style={selectedTemplate.section}>
               <h5 style={selectedTemplate.heading}>
                 <FontAwesomeIcon icon={faBook} className="me-2" />
-                {t("professionalSummary")}
+                {rt("professionalSummary")}
               </h5>
               <p style={selectedTemplate.text}>{resume.summary}</p>
             </div>
@@ -256,7 +260,7 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
             <div style={selectedTemplate.section}>
               <h5 style={selectedTemplate.heading}>
                 <FontAwesomeIcon icon={faBook} className="me-2" />
-                {t("education")}
+                {rt("education")}
               </h5>
               {resume.education.map((edu, index) => (
                 <div key={index} className="mb-2">
@@ -265,10 +269,12 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
                   </p>
                   <p style={selectedTemplate.text}>{edu.institution}</p>
                   <p style={selectedTemplate.text}>
-                    {edu.startDate} - {edu.endDate || "Present"}
+                    {edu.startDate} - {edu.endDate || rt("present")}
                   </p>
                   {edu.gpa && (
-                    <p style={selectedTemplate.text}>GPA: {edu.gpa}</p>
+                    <p style={selectedTemplate.text}>
+                      {rt("gpa")}: {edu.gpa}
+                    </p>
                   )}
                 </div>
               ))}
@@ -278,7 +284,7 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
             <div style={selectedTemplate.section}>
               <h5 style={selectedTemplate.heading}>
                 <FontAwesomeIcon icon={faBriefcase} className="me-2" />
-                {t("experience")}
+                {rt("experience")}
               </h5>
               {resume.experience.map((exp, index) => (
                 <div key={index} className="mb-2">
@@ -287,7 +293,7 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
                   </p>
                   <p style={selectedTemplate.text}>{exp.location}</p>
                   <p style={selectedTemplate.text}>
-                    {exp.startDate} - {exp.endDate || "Present"}
+                    {exp.startDate} - {exp.endDate || rt("present")}
                   </p>
                   <p style={selectedTemplate.text}>{exp.description}</p>
                 </div>
@@ -298,7 +304,7 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
             <div style={selectedTemplate.section}>
               <h5 style={selectedTemplate.heading}>
                 <FontAwesomeIcon icon={faTools} className="me-2" />
-                {t("skills")}
+                {rt("skills")}
               </h5>
               <ul>
                 {resume.skills.map((skill, index) => (
@@ -313,7 +319,7 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
             <div style={selectedTemplate.section}>
               <h5 style={selectedTemplate.heading}>
                 <FontAwesomeIcon icon={faCertificate} className="me-2" />
-                {t("certifications")}
+                {rt("certifications")}
               </h5>
               {resume.certifications.map((cert, index) => (
                 <p key={index} style={selectedTemplate.text}>
@@ -326,7 +332,7 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
             <div style={selectedTemplate.section}>
               <h5 style={selectedTemplate.heading}>
                 <FontAwesomeIcon icon={faProjectDiagram} className="me-2" />
-                {t("projects")}
+                {rt("projects")}
               </h5>
               {resume.projects.map((proj, index) => (
                 <div key={index} className="mb-2">
