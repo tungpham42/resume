@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { db } from "../firebase";
 import { doc, setDoc, getDoc, collection } from "firebase/firestore";
 import {
@@ -15,6 +15,23 @@ import {
 import { useParams, useNavigate } from "react-router-dom";
 import { validateResume } from "../utils/resumeUtils";
 import ResumePreview from "./ResumePreview";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faUser,
+  faBook,
+  faTools,
+  faPlus,
+  faTrash,
+  faSave,
+  faTimes,
+  faFileAlt,
+  faEnvelope,
+  faPhone,
+  faMapMarkerAlt,
+  faGlobe,
+} from "@fortawesome/free-solid-svg-icons";
+import { faLinkedinIn } from "@fortawesome/free-brands-svg-icons";
+import { useLanguage } from "../context/LanguageContext";
 
 const initialResumeState = {
   title: "",
@@ -66,6 +83,7 @@ const initialResumeState = {
 };
 
 const ResumeForm = ({ user }) => {
+  const { t } = useLanguage();
   const { resumeId } = useParams();
   const navigate = useNavigate();
   const isNew = resumeId === "new";
@@ -90,7 +108,7 @@ const ResumeForm = ({ user }) => {
         } else {
           setAlert({
             show: true,
-            message: "Resume not found.",
+            message: t("resumeNotFound"),
             variant: "danger",
           });
         }
@@ -98,7 +116,7 @@ const ResumeForm = ({ user }) => {
         console.error("Error fetching resume:", err);
         setAlert({
           show: true,
-          message: "Failed to load resume.",
+          message: t("failedToLoad"),
           variant: "danger",
         });
       } finally {
@@ -106,7 +124,7 @@ const ResumeForm = ({ user }) => {
       }
     };
     if (user && resumeId && !isNew) fetchResume();
-  }, [user, resumeId, isNew]);
+  }, [user, resumeId, isNew, t]);
 
   const autosave = useCallback(async () => {
     if (isNew || isSaving) return;
@@ -235,15 +253,15 @@ const ResumeForm = ({ user }) => {
       await setDoc(resumeRef, resumeData);
       setAlert({
         show: true,
-        message: "Resume saved successfully!",
+        message: t("resumeSaved"),
         variant: "success",
       });
-      setTimeout(() => navigate("/resumes"), 2000);
+      navigate("/resumes");
     } catch (err) {
       console.error("Error saving resume:", err);
       setAlert({
         show: true,
-        message: "Failed to save resume.",
+        message: t("failedToSave"),
         variant: "danger",
       });
     } finally {
@@ -252,14 +270,14 @@ const ResumeForm = ({ user }) => {
     }
   };
 
-  const memoizedResume = useMemo(() => ({ ...resume }), [resume]);
-
   return (
     <Container fluid className="py-5">
       <Row>
         <Col md={6}>
           <Card className="p-4">
-            <h2 className="mb-4">{isNew ? "Create Resume" : "Edit Resume"}</h2>
+            <h2 className="mb-4">
+              {isNew ? t("createResume") : t("editResume")}
+            </h2>
             {alert.show && (
               <Alert
                 variant={alert.variant}
@@ -279,7 +297,7 @@ const ResumeForm = ({ user }) => {
               </Alert>
             )}
             {loading ? (
-              <p>Loading...</p>
+              <p>{t("loading")}</p>
             ) : (
               <Tab.Container defaultActiveKey="personalInfo">
                 <Row>
@@ -287,31 +305,37 @@ const ResumeForm = ({ user }) => {
                     <Nav variant="pills" className="flex-column">
                       <Nav.Item>
                         <Nav.Link eventKey="personalInfo">
-                          Personal Info
+                          {t("personalInfo")}
                         </Nav.Link>
                       </Nav.Item>
                       <Nav.Item>
-                        <Nav.Link eventKey="summary">Summary</Nav.Link>
+                        <Nav.Link eventKey="summary">
+                          {t("professionalSummary")}
+                        </Nav.Link>
                       </Nav.Item>
                       <Nav.Item>
-                        <Nav.Link eventKey="education">Education</Nav.Link>
+                        <Nav.Link eventKey="education">
+                          {t("education")}
+                        </Nav.Link>
                       </Nav.Item>
                       <Nav.Item>
-                        <Nav.Link eventKey="experience">Experience</Nav.Link>
+                        <Nav.Link eventKey="experience">
+                          {t("experience")}
+                        </Nav.Link>
                       </Nav.Item>
                       <Nav.Item>
-                        <Nav.Link eventKey="skills">Skills</Nav.Link>
+                        <Nav.Link eventKey="skills">{t("skills")}</Nav.Link>
                       </Nav.Item>
                       <Nav.Item>
                         <Nav.Link eventKey="certifications">
-                          Certifications
+                          {t("certifications")}
                         </Nav.Link>
                       </Nav.Item>
                       <Nav.Item>
-                        <Nav.Link eventKey="projects">Projects</Nav.Link>
+                        <Nav.Link eventKey="projects">{t("projects")}</Nav.Link>
                       </Nav.Item>
                       <Nav.Item>
-                        <Nav.Link eventKey="template">Template</Nav.Link>
+                        <Nav.Link eventKey="template">{t("template")}</Nav.Link>
                       </Nav.Item>
                     </Nav>
                   </Col>
@@ -320,7 +344,13 @@ const ResumeForm = ({ user }) => {
                       <Tab.Content>
                         <Tab.Pane eventKey="personalInfo">
                           <Form.Group className="mb-3">
-                            <Form.Label>Resume Title</Form.Label>
+                            <Form.Label>
+                              <FontAwesomeIcon
+                                icon={faFileAlt}
+                                className="me-2"
+                              />
+                              {t("resumeTitle")}
+                            </Form.Label>
                             <Form.Control
                               type="text"
                               value={resume.title}
@@ -332,12 +362,15 @@ const ResumeForm = ({ user }) => {
                                   e.target.value
                                 )
                               }
-                              placeholder="e.g., Software Engineer Resume"
+                              placeholder={t("resumeTitle")}
                               required
                             />
                           </Form.Group>
                           <Form.Group className="mb-3">
-                            <Form.Label>Full Name</Form.Label>
+                            <Form.Label>
+                              <FontAwesomeIcon icon={faUser} className="me-2" />
+                              {t("fullName")}
+                            </Form.Label>
                             <Form.Control
                               type="text"
                               value={resume.personalInfo.name}
@@ -353,7 +386,13 @@ const ResumeForm = ({ user }) => {
                             />
                           </Form.Group>
                           <Form.Group className="mb-3">
-                            <Form.Label>Email</Form.Label>
+                            <Form.Label>
+                              <FontAwesomeIcon
+                                icon={faEnvelope}
+                                className="me-2"
+                              />
+                              {t("email")}
+                            </Form.Label>
                             <Form.Control
                               type="email"
                               value={resume.personalInfo.email}
@@ -369,7 +408,13 @@ const ResumeForm = ({ user }) => {
                             />
                           </Form.Group>
                           <Form.Group className="mb-3">
-                            <Form.Label>Phone</Form.Label>
+                            <Form.Label>
+                              <FontAwesomeIcon
+                                icon={faPhone}
+                                className="me-2"
+                              />
+                              {t("phone")}
+                            </Form.Label>
                             <Form.Control
                               type="tel"
                               value={resume.personalInfo.phone}
@@ -384,7 +429,13 @@ const ResumeForm = ({ user }) => {
                             />
                           </Form.Group>
                           <Form.Group className="mb-3">
-                            <Form.Label>Address</Form.Label>
+                            <Form.Label>
+                              <FontAwesomeIcon
+                                icon={faMapMarkerAlt}
+                                className="me-2"
+                              />
+                              {t("address")}
+                            </Form.Label>
                             <Form.Control
                               type="text"
                               value={resume.personalInfo.address}
@@ -399,7 +450,13 @@ const ResumeForm = ({ user }) => {
                             />
                           </Form.Group>
                           <Form.Group className="mb-3">
-                            <Form.Label>Website</Form.Label>
+                            <Form.Label>
+                              <FontAwesomeIcon
+                                icon={faGlobe}
+                                className="me-2"
+                              />
+                              {t("website")}
+                            </Form.Label>
                             <Form.Control
                               type="url"
                               value={resume.personalInfo.website}
@@ -414,7 +471,13 @@ const ResumeForm = ({ user }) => {
                             />
                           </Form.Group>
                           <Form.Group className="mb-3">
-                            <Form.Label>LinkedIn</Form.Label>
+                            <Form.Label>
+                              <FontAwesomeIcon
+                                icon={faLinkedinIn}
+                                className="me-2"
+                              />
+                              {t("linkedin")}
+                            </Form.Label>
                             <Form.Control
                               type="url"
                               value={resume.personalInfo.linkedin}
@@ -431,7 +494,10 @@ const ResumeForm = ({ user }) => {
                         </Tab.Pane>
                         <Tab.Pane eventKey="summary">
                           <Form.Group className="mb-3">
-                            <Form.Label>Professional Summary</Form.Label>
+                            <Form.Label>
+                              <FontAwesomeIcon icon={faBook} className="me-2" />
+                              {t("professionalSummary")}
+                            </Form.Label>
                             <Form.Control
                               as="textarea"
                               rows={4}
@@ -451,7 +517,7 @@ const ResumeForm = ({ user }) => {
                           {resume.education.map((edu, index) => (
                             <Card key={index} className="mb-3 p-3">
                               <Form.Group className="mb-3">
-                                <Form.Label>Institution</Form.Label>
+                                <Form.Label>{t("institution")}</Form.Label>
                                 <Form.Control
                                   type="text"
                                   value={edu.institution}
@@ -466,7 +532,7 @@ const ResumeForm = ({ user }) => {
                                 />
                               </Form.Group>
                               <Form.Group className="mb-3">
-                                <Form.Label>Degree</Form.Label>
+                                <Form.Label>{t("degree")}</Form.Label>
                                 <Form.Control
                                   type="text"
                                   value={edu.degree}
@@ -481,7 +547,7 @@ const ResumeForm = ({ user }) => {
                                 />
                               </Form.Group>
                               <Form.Group className="mb-3">
-                                <Form.Label>Field of Study</Form.Label>
+                                <Form.Label>{t("field")}</Form.Label>
                                 <Form.Control
                                   type="text"
                                   value={edu.field}
@@ -498,7 +564,7 @@ const ResumeForm = ({ user }) => {
                               <Row>
                                 <Col>
                                   <Form.Group className="mb-3">
-                                    <Form.Label>Start Date</Form.Label>
+                                    <Form.Label>{t("startDate")}</Form.Label>
                                     <Form.Control
                                       type="date"
                                       value={edu.startDate}
@@ -515,7 +581,7 @@ const ResumeForm = ({ user }) => {
                                 </Col>
                                 <Col>
                                   <Form.Group className="mb-3">
-                                    <Form.Label>End Date</Form.Label>
+                                    <Form.Label>{t("endDate")}</Form.Label>
                                     <Form.Control
                                       type="date"
                                       value={edu.endDate}
@@ -532,7 +598,7 @@ const ResumeForm = ({ user }) => {
                                 </Col>
                               </Row>
                               <Form.Group className="mb-3">
-                                <Form.Label>GPA</Form.Label>
+                                <Form.Label>{t("gpa")}</Form.Label>
                                 <Form.Control
                                   type="text"
                                   value={edu.gpa}
@@ -551,7 +617,11 @@ const ResumeForm = ({ user }) => {
                                 size="sm"
                                 onClick={() => removeEntry("education", index)}
                               >
-                                Remove
+                                <FontAwesomeIcon
+                                  icon={faTrash}
+                                  className="me-1"
+                                />
+                                {t("remove")}
                               </Button>
                             </Card>
                           ))}
@@ -559,14 +629,15 @@ const ResumeForm = ({ user }) => {
                             variant="outline-primary"
                             onClick={() => addEntry("education")}
                           >
-                            Add Education
+                            <FontAwesomeIcon icon={faPlus} className="me-2" />
+                            {t("addEducation")}
                           </Button>
                         </Tab.Pane>
                         <Tab.Pane eventKey="experience">
                           {resume.experience.map((exp, index) => (
                             <Card key={index} className="mb-3 p-3">
                               <Form.Group className="mb-3">
-                                <Form.Label>Company</Form.Label>
+                                <Form.Label>{t("company")}</Form.Label>
                                 <Form.Control
                                   type="text"
                                   value={exp.company}
@@ -581,7 +652,7 @@ const ResumeForm = ({ user }) => {
                                 />
                               </Form.Group>
                               <Form.Group className="mb-3">
-                                <Form.Label>Position</Form.Label>
+                                <Form.Label>{t("position")}</Form.Label>
                                 <Form.Control
                                   type="text"
                                   value={exp.position}
@@ -596,7 +667,7 @@ const ResumeForm = ({ user }) => {
                                 />
                               </Form.Group>
                               <Form.Group className="mb-3">
-                                <Form.Label>Location</Form.Label>
+                                <Form.Label>{t("location")}</Form.Label>
                                 <Form.Control
                                   type="text"
                                   value={exp.location}
@@ -613,7 +684,7 @@ const ResumeForm = ({ user }) => {
                               <Row>
                                 <Col>
                                   <Form.Group className="mb-3">
-                                    <Form.Label>Start Date</Form.Label>
+                                    <Form.Label>{t("startDate")}</Form.Label>
                                     <Form.Control
                                       type="date"
                                       value={exp.startDate}
@@ -630,7 +701,7 @@ const ResumeForm = ({ user }) => {
                                 </Col>
                                 <Col>
                                   <Form.Group className="mb-3">
-                                    <Form.Label>End Date</Form.Label>
+                                    <Form.Label>{t("endDate")}</Form.Label>
                                     <Form.Control
                                       type="date"
                                       value={exp.endDate}
@@ -647,7 +718,7 @@ const ResumeForm = ({ user }) => {
                                 </Col>
                               </Row>
                               <Form.Group className="mb-3">
-                                <Form.Label>Description</Form.Label>
+                                <Form.Label>{t("description")}</Form.Label>
                                 <Form.Control
                                   as="textarea"
                                   rows={4}
@@ -667,7 +738,11 @@ const ResumeForm = ({ user }) => {
                                 size="sm"
                                 onClick={() => removeEntry("experience", index)}
                               >
-                                Remove
+                                <FontAwesomeIcon
+                                  icon={faTrash}
+                                  className="me-1"
+                                />
+                                {t("remove")}
                               </Button>
                             </Card>
                           ))}
@@ -675,12 +750,19 @@ const ResumeForm = ({ user }) => {
                             variant="outline-primary"
                             onClick={() => addEntry("experience")}
                           >
-                            Add Experience
+                            <FontAwesomeIcon icon={faPlus} className="me-2" />
+                            {t("addExperience")}
                           </Button>
                         </Tab.Pane>
                         <Tab.Pane eventKey="skills">
                           <Form.Group className="mb-3">
-                            <Form.Label>Skills</Form.Label>
+                            <Form.Label>
+                              <FontAwesomeIcon
+                                icon={faTools}
+                                className="me-2"
+                              />
+                              {t("skills")}
+                            </Form.Label>
                             <Form.Control
                               as="textarea"
                               rows={3}
@@ -692,7 +774,7 @@ const ResumeForm = ({ user }) => {
                                   .filter((s) => s);
                                 handleChange(null, null, "skills", skillsArray);
                               }}
-                              placeholder="Enter one skill per line"
+                              placeholder={t("skills")}
                             />
                           </Form.Group>
                         </Tab.Pane>
@@ -700,7 +782,7 @@ const ResumeForm = ({ user }) => {
                           {resume.certifications.map((cert, index) => (
                             <Card key={index} className="mb-3 p-3">
                               <Form.Group className="mb-3">
-                                <Form.Label>Certification Name</Form.Label>
+                                <Form.Label>{t("name")}</Form.Label>
                                 <Form.Control
                                   type="text"
                                   value={cert.name}
@@ -715,7 +797,7 @@ const ResumeForm = ({ user }) => {
                                 />
                               </Form.Group>
                               <Form.Group className="mb-3">
-                                <Form.Label>Issuer</Form.Label>
+                                <Form.Label>{t("issuer")}</Form.Label>
                                 <Form.Control
                                   type="text"
                                   value={cert.issuer}
@@ -730,7 +812,7 @@ const ResumeForm = ({ user }) => {
                                 />
                               </Form.Group>
                               <Form.Group className="mb-3">
-                                <Form.Label>Date</Form.Label>
+                                <Form.Label>{t("date")}</Form.Label>
                                 <Form.Control
                                   type="date"
                                   value={cert.date}
@@ -751,7 +833,11 @@ const ResumeForm = ({ user }) => {
                                   removeEntry("certifications", index)
                                 }
                               >
-                                Remove
+                                <FontAwesomeIcon
+                                  icon={faTrash}
+                                  className="me-1"
+                                />
+                                {t("remove")}
                               </Button>
                             </Card>
                           ))}
@@ -759,14 +845,15 @@ const ResumeForm = ({ user }) => {
                             variant="outline-primary"
                             onClick={() => addEntry("certifications")}
                           >
-                            Add Certification
+                            <FontAwesomeIcon icon={faPlus} className="me-2" />
+                            {t("addCertification")}
                           </Button>
                         </Tab.Pane>
                         <Tab.Pane eventKey="projects">
                           {resume.projects.map((proj, index) => (
                             <Card key={index} className="mb-3 p-3">
                               <Form.Group className="mb-3">
-                                <Form.Label>Project Name</Form.Label>
+                                <Form.Label>{t("projectName")}</Form.Label>
                                 <Form.Control
                                   type="text"
                                   value={proj.name}
@@ -781,7 +868,9 @@ const ResumeForm = ({ user }) => {
                                 />
                               </Form.Group>
                               <Form.Group className="mb-3">
-                                <Form.Label>Description</Form.Label>
+                                <Form.Label>
+                                  {t("projectDescription")}
+                                </Form.Label>
                                 <Form.Control
                                   as="textarea"
                                   rows={3}
@@ -797,7 +886,7 @@ const ResumeForm = ({ user }) => {
                                 />
                               </Form.Group>
                               <Form.Group className="mb-3">
-                                <Form.Label>URL</Form.Label>
+                                <Form.Label>{t("projectLink")}</Form.Label>
                                 <Form.Control
                                   type="url"
                                   value={proj.url}
@@ -816,7 +905,11 @@ const ResumeForm = ({ user }) => {
                                 size="sm"
                                 onClick={() => removeEntry("projects", index)}
                               >
-                                Remove
+                                <FontAwesomeIcon
+                                  icon={faTrash}
+                                  className="me-1"
+                                />
+                                {t("remove")}
                               </Button>
                             </Card>
                           ))}
@@ -824,12 +917,19 @@ const ResumeForm = ({ user }) => {
                             variant="outline-primary"
                             onClick={() => addEntry("projects")}
                           >
-                            Add Project
+                            <FontAwesomeIcon icon={faPlus} className="me-2" />
+                            {t("addProject")}
                           </Button>
                         </Tab.Pane>
                         <Tab.Pane eventKey="template">
                           <Form.Group className="mb-3">
-                            <Form.Label>Template</Form.Label>
+                            <Form.Label>
+                              <FontAwesomeIcon
+                                icon={faFileAlt}
+                                className="me-2"
+                              />
+                              {t("template")}
+                            </Form.Label>
                             <Form.Select
                               value={resume.templateId}
                               onChange={(e) =>
@@ -841,15 +941,42 @@ const ResumeForm = ({ user }) => {
                                 )
                               }
                             >
-                              <option value="default">Default</option>
-                              <option value="modern">Modern</option>
-                              <option value="professional">Professional</option>
-                              <option value="executive">Executive</option>
-                              <option value="corporate">Corporate</option>
-                              <option value="classic">Classic</option>
-                              <option value="creative">Creative</option>
-                              <option value="elegant">Elegant</option>
-                              <option value="minimalist">Minimalist</option>
+                              <option value="default">
+                                {t("template_default")}
+                              </option>
+                              <option value="modern">
+                                {t("template_modern")}
+                              </option>
+                              <option value="professional">
+                                {t("template_professional")}
+                              </option>
+                              <option value="executive">
+                                {t("template_executive")}
+                              </option>
+                              <option value="corporate">
+                                {t("template_corporate")}
+                              </option>
+                              <option value="classic">
+                                {t("template_classic")}
+                              </option>
+                              <option value="creative">
+                                {t("template_creative")}
+                              </option>
+                              <option value="elegant">
+                                {t("template_elegant")}
+                              </option>
+                              <option value="minimalist">
+                                {t("template_minimalist")}
+                              </option>
+                              <option value="sleek">
+                                {t("template_sleek")}
+                              </option>
+                              <option value="formal">
+                                {t("template_formal")}
+                              </option>
+                              <option value="prestige">
+                                {t("template_prestige")}
+                              </option>
                             </Form.Select>
                           </Form.Group>
                         </Tab.Pane>
@@ -860,14 +987,16 @@ const ResumeForm = ({ user }) => {
                           type="submit"
                           disabled={loading || isSaving}
                         >
-                          {loading || isSaving ? "Saving..." : "Save Resume"}
+                          <FontAwesomeIcon icon={faSave} className="me-2" />
+                          {loading || isSaving ? t("loading") : t("saveResume")}
                         </Button>
                         <Button
                           variant="outline-secondary"
                           onClick={() => navigate("/resumes")}
                           disabled={loading || isSaving}
                         >
-                          Cancel
+                          <FontAwesomeIcon icon={faTimes} className="me-2" />
+                          {t("cancel")}
                         </Button>
                       </div>
                     </Form>
@@ -879,8 +1008,8 @@ const ResumeForm = ({ user }) => {
         </Col>
         <Col md={6}>
           <Card className="p-4">
-            <h3>Live Preview</h3>
-            <ResumePreview user={user} resume={memoizedResume} isPreview />
+            <h3>{t("preview")}</h3>
+            <ResumePreview user={user} resume={resume} isPreview />
           </Card>
         </Col>
       </Row>
@@ -888,4 +1017,4 @@ const ResumeForm = ({ user }) => {
   );
 };
 
-export default React.memo(ResumeForm);
+export default ResumeForm;

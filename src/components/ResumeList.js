@@ -1,3 +1,4 @@
+// src/components/ResumeList.js
 import React, { useState, useEffect } from "react";
 import { db } from "../firebase";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
@@ -14,8 +15,20 @@ import {
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { duplicateResume } from "../utils/resumeUtils";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faPlus,
+  faEdit,
+  faEye,
+  faCopy,
+  faTrash,
+  faSearch,
+  faSort,
+} from "@fortawesome/free-solid-svg-icons";
+import { useLanguage } from "../context/LanguageContext";
 
 const ResumeList = ({ user }) => {
+  const { t } = useLanguage();
   const [resumes, setResumes] = useState([]);
   const [filteredResumes, setFilteredResumes] = useState([]);
   const [sortBy, setSortBy] = useState("title");
@@ -46,7 +59,7 @@ const ResumeList = ({ user }) => {
         console.error("Error fetching resumes:", err);
         setAlert({
           show: true,
-          message: "Failed to load resumes.",
+          message: t("failedToLoad"),
           variant: "danger",
         });
       } finally {
@@ -54,7 +67,7 @@ const ResumeList = ({ user }) => {
       }
     };
     if (user) fetchResumes();
-  }, [user]);
+  }, [user, t]);
 
   useEffect(() => {
     const filtered = resumes.filter((resume) =>
@@ -76,14 +89,14 @@ const ResumeList = ({ user }) => {
       setResumes(resumes.filter((resume) => resume.docId !== resumeId));
       setAlert({
         show: true,
-        message: "Resume deleted successfully!",
+        message: t("resumeDeleted"),
         variant: "success",
       });
     } catch (err) {
       console.error("Error deleting resume:", err);
       setAlert({
         show: true,
-        message: "Failed to delete resume.",
+        message: t("failedToDelete"),
         variant: "danger",
       });
     }
@@ -115,7 +128,7 @@ const ResumeList = ({ user }) => {
   return (
     <Container className="py-5">
       <Card className="p-4">
-        <h2 className="mb-4">Your Resumes</h2>
+        <h2 className="mb-4">{t("myResumes")}</h2>
         {alert.show && (
           <Alert
             variant={alert.variant}
@@ -128,38 +141,44 @@ const ResumeList = ({ user }) => {
         <Row className="mb-4 align-items-center">
           <Col md={4}>
             <Button variant="primary" onClick={() => navigate("/resume/new")}>
-              Create New Resume
+              <FontAwesomeIcon icon={faPlus} className="me-2" />
+              {t("createNewResume")}
             </Button>
           </Col>
           <Col md={4}>
             <InputGroup>
+              <InputGroup.Text>
+                <FontAwesomeIcon icon={faSearch} />
+              </InputGroup.Text>
               <Form.Control
                 type="text"
-                placeholder="Search resumes..."
+                placeholder={t("searchResumes")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
-              <Button variant="outline-secondary">Search</Button>
             </InputGroup>
           </Col>
           <Col md={4} className="text-md-end">
             <Form.Group className="d-inline-block" style={{ width: "200px" }}>
-              <Form.Label className="me-2">Sort By:</Form.Label>
+              <Form.Label className="me-2">
+                <FontAwesomeIcon icon={faSort} className="me-1" />
+                {t("sortBy")}:
+              </Form.Label>
               <Form.Select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
               >
-                <option value="title">Title</option>
-                <option value="createdAt">Creation Date</option>
-                <option value="updatedAt">Last Modified</option>
+                <option value="title">{t("title")}</option>
+                <option value="createdAt">{t("creationDate")}</option>
+                <option value="updatedAt">{t("lastModified")}</option>
               </Form.Select>
             </Form.Group>
           </Col>
         </Row>
         {loading ? (
-          <p>Loading resumes...</p>
+          <p>{t("loading")}</p>
         ) : filteredResumes.length === 0 ? (
-          <p>No resumes found. Create one to get started!</p>
+          <p>{t("noResumesFound")}</p>
         ) : (
           <Row>
             {filteredResumes.map((resume, index) => (
@@ -171,10 +190,10 @@ const ResumeList = ({ user }) => {
               >
                 <Card className="h-100">
                   <Card.Body>
-                    <Card.Title>{resume.title || "Untitled Resume"}</Card.Title>
+                    <Card.Title>{resume.title || t("resumeTitle")}</Card.Title>
                     <Card.Text>
-                      Last Modified:{" "}
-                      {new Date(resume.updatedAt).toLocaleDateString()}
+                      {t("lastModified")}:
+                      {new Date(resume.updatedAt).toLocaleDateString("en-CA")}
                     </Card.Text>
                     <div className="d-flex gap-2 flex-wrap">
                       <Button
@@ -182,28 +201,32 @@ const ResumeList = ({ user }) => {
                         size="sm"
                         onClick={() => navigate(`/resume/${resume.docId}`)}
                       >
-                        Edit
+                        <FontAwesomeIcon icon={faEdit} className="me-1" />
+                        {t("edit")}
                       </Button>
                       <Button
                         variant="outline-primary"
                         size="sm"
                         onClick={() => navigate(`/preview/${resume.docId}`)}
                       >
-                        Preview
+                        <FontAwesomeIcon icon={faEye} className="me-1" />
+                        {t("preview")}
                       </Button>
                       <Button
                         variant="outline-success"
                         size="sm"
                         onClick={() => handleDuplicate(resume, resume.docId)}
                       >
-                        Duplicate
+                        <FontAwesomeIcon icon={faCopy} className="me-1" />
+                        {t("duplicate")}
                       </Button>
                       <Button
                         variant="outline-danger"
                         size="sm"
                         onClick={() => handleDelete(resume.docId)}
                       >
-                        Delete
+                        <FontAwesomeIcon icon={faTrash} className="me-1" />
+                        {t("delete")}
                       </Button>
                     </div>
                   </Card.Body>
@@ -214,7 +237,6 @@ const ResumeList = ({ user }) => {
         )}
       </Card>
 
-      {/* Confirmation Modal */}
       <Modal
         show={showConfirmModal}
         onHide={() => {
@@ -224,12 +246,14 @@ const ResumeList = ({ user }) => {
         centered
       >
         <Modal.Header closeButton>
-          <Modal.Title>Confirm Duplication</Modal.Title>
+          <Modal.Title>
+            <FontAwesomeIcon icon={faCopy} className="me-2" />
+            {t("confirmDuplication")}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Are you sure you want to duplicate "
-          {resumeToDuplicate?.resume.title || "Untitled Resume"}"? This will
-          create a new resume with "(Copy)" appended to the title.
+          {t("confirmDuplicateMessage")} "
+          {resumeToDuplicate?.resume.title || t("resumeTitle")}?"
         </Modal.Body>
         <Modal.Footer>
           <Button
@@ -239,10 +263,11 @@ const ResumeList = ({ user }) => {
               setResumeToDuplicate(null);
             }}
           >
-            Cancel
+            {t("cancel")}
           </Button>
           <Button variant="success" onClick={confirmDuplicate}>
-            Duplicate
+            <FontAwesomeIcon icon={faCopy} className="me-2" />
+            {t("duplicate")}
           </Button>
         </Modal.Footer>
       </Modal>

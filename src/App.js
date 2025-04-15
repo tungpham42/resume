@@ -27,7 +27,12 @@ function App() {
     <Router>
       <Header user={user} />
       <Routes>
-        <Route path="/" element={<Auth setUser={setUser} />} />
+        <Route
+          path="/"
+          element={
+            user ? <ResumeList user={user} /> : <Auth setUser={setUser} />
+          }
+        />
         <Route
           path="/resumes"
           element={

@@ -5,9 +5,24 @@ import { Container, Card, Button, Alert, Form } from "react-bootstrap";
 import { useParams, useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faEdit,
+  faArrowLeft,
+  faDownload,
+  faUser,
+  faBook,
+  faBriefcase,
+  faTools,
+  faCertificate,
+  faProjectDiagram,
+} from "@fortawesome/free-solid-svg-icons";
+import templateStyles from "./Styles";
+import { useLanguage } from "../context/LanguageContext";
 
 const ResumePreview = React.memo(
   ({ user, resume: resumeProp, isPreview = false }) => {
+    const { t } = useLanguage();
     const { resumeId } = useParams();
     const navigate = useNavigate();
     const [resume, setResume] = useState(resumeProp);
@@ -32,11 +47,11 @@ const ResumePreview = React.memo(
               setResume(docSnap.data());
               setVisibility(docSnap.data().visibility || {});
             } else {
-              setError("Resume not found.");
+              setError(t("resumeNotFound"));
             }
           } catch (err) {
             console.error("Error fetching resume:", err);
-            setError("Failed to load resume.");
+            setError(t("failedToLoad"));
           } finally {
             setLoading(false);
           }
@@ -46,11 +61,9 @@ const ResumePreview = React.memo(
         setResume(resumeProp);
         setVisibility(resumeProp.visibility || {});
       }
-    }, [user, resumeId, resumeProp, isPreview]);
+    }, [user, resumeId, resumeProp, isPreview, t]);
 
-    const handleResize = useCallback(() => {
-      // Minimal resize handling to avoid triggering updates
-    }, []);
+    const handleResize = useCallback(() => {}, []);
 
     useEffect(() => {
       let resizeTimeout;
@@ -69,207 +82,6 @@ const ResumePreview = React.memo(
       };
     }, [handleResize]);
 
-    const templateStyles = {
-      default: {
-        card: {
-          backgroundColor: "#fff",
-          padding: "2rem",
-          borderRadius: "12px",
-        },
-        title: {
-          fontFamily: "Inter",
-          color: "#2d3748",
-          fontSize: "2rem",
-          fontWeight: "700",
-        },
-        section: { padding: "1rem 0", borderBottom: "1px solid #e2e8f0" },
-        heading: {
-          fontFamily: "Inter",
-          color: "#4a5568",
-          fontSize: "1.25rem",
-          fontWeight: "600",
-        },
-        text: { fontFamily: "Inter", color: "#4a5568", fontSize: "1rem" },
-      },
-      modern: {
-        card: {
-          backgroundColor: "#f7fafc",
-          padding: "2rem",
-          borderLeft: "5px solid #1a73e8",
-        },
-        title: {
-          fontFamily: "Inter",
-          color: "#1a73e8",
-          fontSize: "2rem",
-          fontWeight: "700",
-        },
-        section: {
-          padding: "1rem",
-          backgroundColor: "#fff",
-          marginBottom: "1rem",
-          borderRadius: "8px",
-        },
-        heading: {
-          fontFamily: "Inter",
-          color: "#1a73e8",
-          fontSize: "1.25rem",
-          fontWeight: "600",
-        },
-        text: { fontFamily: "Inter", color: "#2d3748", fontSize: "1rem" },
-      },
-      professional: {
-        card: {
-          backgroundColor: "#fff",
-          border: "1px solid #2d3748",
-          padding: "2rem",
-        },
-        title: {
-          fontFamily: "Georgia",
-          color: "#2d3748",
-          fontSize: "2rem",
-          fontWeight: "700",
-        },
-        section: { padding: "1rem 0", borderBottom: "2px solid #2d3748" },
-        heading: {
-          fontFamily: "Georgia",
-          color: "#2d3748",
-          fontSize: "1.25rem",
-          fontWeight: "600",
-        },
-        text: { fontFamily: "Georgia", color: "#4a5568", fontSize: "1rem" },
-      },
-      executive: {
-        card: {
-          backgroundColor: "#fafafa",
-          padding: "2rem",
-          boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-        },
-        title: {
-          fontFamily: "Inter",
-          color: "#1a3c5e",
-          fontSize: "2rem",
-          fontWeight: "700",
-        },
-        section: { padding: "1rem 0", borderLeft: "3px solid #1a3c5e" },
-        heading: {
-          fontFamily: "Inter",
-          color: "#1a3c5e",
-          fontSize: "1.25rem",
-          fontWeight: "600",
-        },
-        text: { fontFamily: "Inter", color: "#4a5568", fontSize: "1rem" },
-      },
-      corporate: {
-        card: {
-          backgroundColor: "#fff",
-          padding: "2rem",
-          borderTop: "4px solid #4a5568",
-        },
-        title: {
-          fontFamily: "Inter",
-          color: "#2d3748",
-          fontSize: "2rem",
-          fontWeight: "700",
-        },
-        section: {
-          padding: "1rem",
-          backgroundColor: "#f7fafc",
-          marginBottom: "1rem",
-        },
-        heading: {
-          fontFamily: "Inter",
-          color: "#2d3748",
-          fontSize: "1.25rem",
-          fontWeight: "600",
-        },
-        text: { fontFamily: "Inter", color: "#4a5568", fontSize: "1rem" },
-      },
-      classic: {
-        card: {
-          backgroundColor: "#fff",
-          padding: "2rem",
-          border: "1px solid #e2e8f0",
-        },
-        title: {
-          fontFamily: "Inter",
-          color: "#2d3748",
-          fontSize: "2rem",
-          fontWeight: "700",
-        },
-        section: { padding: "1rem 0", borderBottom: "1px solid #e2e8f0" },
-        heading: {
-          fontFamily: "Inter",
-          color: "#2d3748",
-          fontSize: "1.25rem",
-          fontWeight: "600",
-        },
-        text: { fontFamily: "Inter", color: "#4a5568", fontSize: "1rem" },
-      },
-      creative: {
-        card: {
-          backgroundColor: "#fefcbf",
-          padding: "2rem",
-          borderRadius: "12px",
-        },
-        title: {
-          fontFamily: "Lora",
-          color: "#2b6cb0",
-          fontSize: "2rem",
-          fontWeight: "700",
-        },
-        section: {
-          padding: "1rem",
-          backgroundColor: "#fff",
-          marginBottom: "1rem",
-          borderRadius: "8px",
-        },
-        heading: {
-          fontFamily: "Lora",
-          color: "#2b6cb0",
-          fontSize: "1.25rem",
-          fontWeight: "600",
-        },
-        text: { fontFamily: "Lora", color: "#4a5568", fontSize: "1rem" },
-      },
-      elegant: {
-        card: {
-          backgroundColor: "#f7fafc",
-          padding: "2rem",
-          border: "1px solid #cbd5e0",
-        },
-        title: {
-          fontFamily: "Playfair Display",
-          color: "#2d3748",
-          fontSize: "2rem",
-          fontWeight: "700",
-        },
-        section: { padding: "1rem 0", borderBottom: "1px dashed #cbd5e0" },
-        heading: {
-          fontFamily: "Playfair Display",
-          color: "#2d3748",
-          fontSize: "1.25rem",
-          fontWeight: "600",
-        },
-        text: { fontFamily: "Inter", color: "#4a5568", fontSize: "1rem" },
-      },
-      minimalist: {
-        card: { backgroundColor: "#fff", padding: "1.5rem", border: "none" },
-        title: {
-          fontFamily: "Inter",
-          color: "#1a202c",
-          fontSize: "1.8rem",
-          fontWeight: "600",
-        },
-        section: { padding: "0.5rem 0" },
-        heading: {
-          fontFamily: "Inter",
-          color: "#1a202c",
-          fontSize: "1.1rem",
-          fontWeight: "500",
-        },
-        text: { fontFamily: "Inter", color: "#4a5568", fontSize: "0.95rem" },
-      },
-    };
     const handleDownloadPDF = async () => {
       const element = resumeRef.current;
       if (!element) return;
@@ -312,14 +124,14 @@ const ResumePreview = React.memo(
         pdf.save(`${resume.title || "resume"}.pdf`);
         setAlert({
           show: true,
-          message: "PDF downloaded successfully!",
+          message: t("downloadAsPDF"),
           variant: "success",
         });
       } catch (err) {
         console.error("Error generating PDF:", err);
         setAlert({
           show: true,
-          message: "Failed to download PDF.",
+          message: t("failedToSave"),
           variant: "danger",
         });
       }
@@ -332,7 +144,7 @@ const ResumePreview = React.memo(
     if (loading) {
       return (
         <Container className="py-5 text-center">
-          <p>Loading resume...</p>
+          <p>{t("loading")}</p>
         </Container>
       );
     }
@@ -345,7 +157,8 @@ const ResumePreview = React.memo(
             variant="outline-secondary"
             onClick={() => navigate("/resumes")}
           >
-            Back to Resumes
+            <FontAwesomeIcon icon={faArrowLeft} className="me-2" />
+            {t("backToResumes")}
           </Button>
         </Container>
       );
@@ -367,12 +180,12 @@ const ResumePreview = React.memo(
         )}
         {!isPreview && (
           <Card className="mb-4 p-3">
-            <h5>Toggle Sections</h5>
+            <h5>{t("preview")}</h5>
             {Object.keys(visibility).map((section) => (
               <Form.Check
                 key={section}
                 type="checkbox"
-                label={section.charAt(0).toUpperCase() + section.slice(1)}
+                label={t(section)}
                 checked={visibility[section]}
                 onChange={() => toggleVisibility(section)}
               />
@@ -389,29 +202,34 @@ const ResumePreview = React.memo(
         >
           <Card.Body>
             <h1 style={selectedTemplate.title}>
-              {resume.title || "Untitled Resume"}
+              {resume.title || t("resumeTitle")}
             </h1>
             {visibility.personalInfo && (
               <div style={selectedTemplate.section}>
+                <h5 style={selectedTemplate.heading}>
+                  <FontAwesomeIcon icon={faUser} className="me-2" />
+                  {t("personalInfo")}
+                </h5>
                 <p style={selectedTemplate.text}>
-                  <strong>Name:</strong> {resume.personalInfo.name}
+                  <strong>{t("fullName")}:</strong> {resume.personalInfo.name}
                 </p>
                 <p style={selectedTemplate.text}>
-                  <strong>Email:</strong> {resume.personalInfo.email}
+                  <strong>{t("email")}:</strong> {resume.personalInfo.email}
                 </p>
                 {resume.personalInfo.phone && (
                   <p style={selectedTemplate.text}>
-                    <strong>Phone:</strong> {resume.personalInfo.phone}
+                    <strong>{t("phone")}:</strong> {resume.personalInfo.phone}
                   </p>
                 )}
                 {resume.personalInfo.address && (
                   <p style={selectedTemplate.text}>
-                    <strong>Address:</strong> {resume.personalInfo.address}
+                    <strong>{t("address")}:</strong>{" "}
+                    {resume.personalInfo.address}
                   </p>
                 )}
                 {resume.personalInfo.website && (
                   <p style={selectedTemplate.text}>
-                    <strong>Website:</strong>{" "}
+                    <strong>{t("website")}:</strong>{" "}
                     <a href={resume.personalInfo.website}>
                       {resume.personalInfo.website}
                     </a>
@@ -419,7 +237,7 @@ const ResumePreview = React.memo(
                 )}
                 {resume.personalInfo.linkedin && (
                   <p style={selectedTemplate.text}>
-                    <strong>LinkedIn:</strong>{" "}
+                    <strong>{t("linkedin")}:</strong>{" "}
                     <a href={resume.personalInfo.linkedin}>
                       {resume.personalInfo.linkedin}
                     </a>
@@ -429,13 +247,19 @@ const ResumePreview = React.memo(
             )}
             {visibility.summary && resume.summary && (
               <div style={selectedTemplate.section}>
-                <h5 style={selectedTemplate.heading}>Professional Summary</h5>
+                <h5 style={selectedTemplate.heading}>
+                  <FontAwesomeIcon icon={faBook} className="me-2" />
+                  {t("professionalSummary")}
+                </h5>
                 <p style={selectedTemplate.text}>{resume.summary}</p>
               </div>
             )}
             {visibility.education && resume.education.length > 0 && (
               <div style={selectedTemplate.section}>
-                <h5 style={selectedTemplate.heading}>Education</h5>
+                <h5 style={selectedTemplate.heading}>
+                  <FontAwesomeIcon icon={faBook} className="me-2" />
+                  {t("education")}
+                </h5>
                 {resume.education.map((edu, index) => (
                   <div key={index} className="mb-2">
                     <p style={selectedTemplate.text}>
@@ -454,7 +278,10 @@ const ResumePreview = React.memo(
             )}
             {visibility.experience && resume.experience.length > 0 && (
               <div style={selectedTemplate.section}>
-                <h5 style={selectedTemplate.heading}>Experience</h5>
+                <h5 style={selectedTemplate.heading}>
+                  <FontAwesomeIcon icon={faBriefcase} className="me-2" />
+                  {t("experience")}
+                </h5>
                 {resume.experience.map((exp, index) => (
                   <div key={index} className="mb-2">
                     <p style={selectedTemplate.text}>
@@ -471,7 +298,10 @@ const ResumePreview = React.memo(
             )}
             {visibility.skills && resume.skills.length > 0 && (
               <div style={selectedTemplate.section}>
-                <h5 style={selectedTemplate.heading}>Skills</h5>
+                <h5 style={selectedTemplate.heading}>
+                  <FontAwesomeIcon icon={faTools} className="me-2" />
+                  {t("skills")}
+                </h5>
                 <ul>
                   {resume.skills.map((skill, index) => (
                     <li key={index} style={selectedTemplate.text}>
@@ -483,7 +313,10 @@ const ResumePreview = React.memo(
             )}
             {visibility.certifications && resume.certifications.length > 0 && (
               <div style={selectedTemplate.section}>
-                <h5 style={selectedTemplate.heading}>Certifications</h5>
+                <h5 style={selectedTemplate.heading}>
+                  <FontAwesomeIcon icon={faCertificate} className="me-2" />
+                  {t("certifications")}
+                </h5>
                 {resume.certifications.map((cert, index) => (
                   <p key={index} style={selectedTemplate.text}>
                     {cert.name} - {cert.issuer} ({cert.date})
@@ -493,7 +326,10 @@ const ResumePreview = React.memo(
             )}
             {visibility.projects && resume.projects.length > 0 && (
               <div style={selectedTemplate.section}>
-                <h5 style={selectedTemplate.heading}>Projects</h5>
+                <h5 style={selectedTemplate.heading}>
+                  <FontAwesomeIcon icon={faProjectDiagram} className="me-2" />
+                  {t("projects")}
+                </h5>
                 {resume.projects.map((proj, index) => (
                   <div key={index} className="mb-2">
                     <p style={selectedTemplate.text}>
@@ -518,16 +354,19 @@ const ResumePreview = React.memo(
               variant="primary"
               onClick={() => navigate(`/resume/${resumeId}`)}
             >
-              Edit Resume
+              <FontAwesomeIcon icon={faEdit} className="me-2" />
+              {t("edit")}
             </Button>
             <Button
               variant="outline-secondary"
               onClick={() => navigate("/resumes")}
             >
-              Back to List
+              <FontAwesomeIcon icon={faArrowLeft} className="me-2" />
+              {t("backToResumes")}
             </Button>
             <Button variant="success" onClick={handleDownloadPDF}>
-              Download as PDF
+              <FontAwesomeIcon icon={faDownload} className="me-2" />
+              {t("downloadAsPDF")}
             </Button>
           </div>
         )}

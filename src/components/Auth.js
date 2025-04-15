@@ -10,9 +10,17 @@ import {
 import { Form, Button, Card, Container, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faEnvelope,
+  faLock,
+  faSignInAlt,
+  faUserPlus,
+} from "@fortawesome/free-solid-svg-icons";
 import { faGoogle } from "@fortawesome/free-brands-svg-icons";
+import { useLanguage } from "../context/LanguageContext";
 
 const Auth = ({ setUser }) => {
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
@@ -68,17 +76,21 @@ const Auth = ({ setUser }) => {
             className="w-100"
             disabled={loading}
           >
-            Log Out
+            <FontAwesomeIcon icon={faSignInAlt} className="me-2" />
+            {t("logOut")}
           </Button>
         ) : (
           <>
             <h2 className="text-center mb-4">
-              {isSignUp ? "Sign Up" : "Sign In"}
+              {isSignUp ? t("signUp") : t("signIn")}
             </h2>
             {error && <Alert variant="danger">{error}</Alert>}
             <Form onSubmit={handleEmailAuth}>
               <Form.Group className="mb-3">
-                <Form.Label>Email</Form.Label>
+                <Form.Label>
+                  <FontAwesomeIcon icon={faEnvelope} className="me-2" />
+                  {t("email")}
+                </Form.Label>
                 <Form.Control
                   type="email"
                   value={email}
@@ -88,7 +100,10 @@ const Auth = ({ setUser }) => {
                 />
               </Form.Group>
               <Form.Group className="mb-3">
-                <Form.Label>Password</Form.Label>
+                <Form.Label>
+                  <FontAwesomeIcon icon={faLock} className="me-2" />
+                  {t("password")}
+                </Form.Label>
                 <Form.Control
                   type="password"
                   value={password}
@@ -103,7 +118,11 @@ const Auth = ({ setUser }) => {
                 className="w-100 mb-3"
                 disabled={loading}
               >
-                {loading ? "Processing..." : isSignUp ? "Sign Up" : "Sign In"}
+                <FontAwesomeIcon
+                  icon={isSignUp ? faUserPlus : faSignInAlt}
+                  className="me-2"
+                />
+                {loading ? t("loading") : isSignUp ? t("signUp") : t("signIn")}
               </Button>
               <Button
                 variant="outline-dark"
@@ -111,8 +130,8 @@ const Auth = ({ setUser }) => {
                 className="w-100 mb-3"
                 disabled={loading}
               >
-                <FontAwesomeIcon icon={faGoogle} className="me-1" />
-                Sign in with Google
+                <FontAwesomeIcon icon={faGoogle} className="me-2" />
+                {t("signInWithGoogle")}
               </Button>
               <div className="text-center">
                 <Button
@@ -120,9 +139,7 @@ const Auth = ({ setUser }) => {
                   onClick={() => setIsSignUp(!isSignUp)}
                   disabled={loading}
                 >
-                  {isSignUp
-                    ? "Already have an account? Sign In"
-                    : "Need an account? Sign Up"}
+                  {isSignUp ? t("alreadyHaveAccount") : t("needAccount")}
                 </Button>
               </div>
             </Form>
