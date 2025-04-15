@@ -67,7 +67,7 @@ const initialResumeState = {
   projects: [{ name: "", description: "", url: "" }],
   customSections: [],
   templateId: "default",
-  language: "vi",
+  language: "en",
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   visibility: {
