@@ -865,26 +865,22 @@ const ResumeForm = ({ user }) => {
                       handleChange(null, null, "templateId", e.target.value)
                     }
                   >
-                    <option value="default">{rt("template_default")}</option>
-                    <option value="modern">{rt("template_modern")}</option>
+                    <option value="default">{t("template_default")}</option>
+                    <option value="modern">{t("template_modern")}</option>
                     <option value="professional">
-                      {rt("template_professional")}
+                      {t("template_professional")}
                     </option>
-                    <option value="executive">
-                      {rt("template_executive")}
-                    </option>
-                    <option value="corporate">
-                      {rt("template_corporate")}
-                    </option>
-                    <option value="classic">{rt("template_classic")}</option>
-                    <option value="creative">{rt("template_creative")}</option>
-                    <option value="elegant">{rt("template_elegant")}</option>
+                    <option value="executive">{t("template_executive")}</option>
+                    <option value="corporate">{t("template_corporate")}</option>
+                    <option value="classic">{t("template_classic")}</option>
+                    <option value="creative">{t("template_creative")}</option>
+                    <option value="elegant">{t("template_elegant")}</option>
                     <option value="minimalist">
-                      {rt("template_minimalist")}
+                      {t("template_minimalist")}
                     </option>
-                    <option value="sleek">{rt("template_sleek")}</option>
-                    <option value="formal">{rt("template_formal")}</option>
-                    <option value="prestige">{rt("template_prestige")}</option>
+                    <option value="sleek">{t("template_sleek")}</option>
+                    <option value="formal">{t("template_formal")}</option>
+                    <option value="prestige">{t("template_prestige")}</option>
                   </Form.Select>
                 </Form.Group>
 
@@ -911,7 +907,7 @@ const ResumeForm = ({ user }) => {
             )}
           </Card>
         </Col>
-        <Col md={6}>
+        <Col md={6} className="sticky-preview">
           <Card className="p-4">
             <h3>{t("preview")}</h3>
             <ResumePreview user={user} resume={resume} isPreview />

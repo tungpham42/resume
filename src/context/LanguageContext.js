@@ -95,6 +95,7 @@ const translations = {
     resumeLanguage: "Language",
     english: "English",
     vietnamese: "Vietnamese",
+    summary: "Summary",
   },
   vi: {
     signIn: "Đăng Nhập",
@@ -190,6 +191,7 @@ const translations = {
     resumeLanguage: "Ngôn Ngữ",
     english: "Tiếng Anh",
     vietnamese: "Tiếng Việt",
+    summary: "Tóm Tắt",
   },
 };
 

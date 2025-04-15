@@ -92,3 +92,17 @@ a:focus-visible {
 .btn-outline:hover {
   background: var(--border);
 }
+.sticky-preview {
+  position: sticky;
+  top: 20px;
+  height: calc(100vh - 40px);
+  overflow-y: auto;
+  padding-right: 10px;
+}
+@media (max-width: 767px) {
+  .sticky-preview {
+    position: static;
+    height: auto;
+    overflow-y: visible;
+  }
+}

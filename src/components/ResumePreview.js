@@ -86,40 +86,82 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
     if (!element) return;
 
     try {
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        logging: false,
-        onclone: (document) => {
-          document.body.style.overflow = "visible";
-          document.documentElement.style.overflow = "visible";
-        },
-      });
-      const imgData = canvas.toDataURL("image/png");
-
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
         format: "a4",
+        compress: true,
       });
 
-      const imgWidth = 210;
-      const pageHeight = 297;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const margin = 10; // Margin in mm
+      let currentY = margin; // Current vertical position
 
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+      // Helper function to check if there's enough space on the current page
+      const hasEnoughSpace = (sectionHeight) => {
+        return currentY + sectionHeight <= pageHeight - margin;
+      };
 
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
+      // Helper function to add a new page
+      const addNewPage = () => {
         pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+        currentY = margin;
+      };
+
+      // Helper function to render an element to canvas and add to PDF
+      const renderElement = async (el, isTitle = false) => {
+        // Temporarily adjust styling for PDF rendering
+        const originalStyle = el.style.cssText;
+        el.style.width = `${imgWidth - 2 * margin}mm`;
+        el.style.boxSizing = "border-box";
+
+        const canvas = await html2canvas(el, {
+          scale: 2, // Higher scale for clarity
+          useCORS: true,
+          backgroundColor: "#ffffff",
+          logging: false,
+          windowWidth: (imgWidth - 2 * margin) * 3.78, // Approximate pixel conversion
+        });
+
+        // Restore original styling
+        el.style.cssText = originalStyle;
+
+        const imgData = canvas.toDataURL("image/jpeg", 0.85);
+        const imgHeight =
+          (canvas.height * (imgWidth - 2 * margin)) / canvas.width;
+
+        if (!hasEnoughSpace(imgHeight) && !isTitle) {
+          addNewPage();
+        }
+
+        pdf.addImage(
+          imgData,
+          "JPEG",
+          margin,
+          currentY,
+          imgWidth - 2 * margin,
+          imgHeight,
+          undefined,
+          "FAST"
+        );
+
+        currentY += imgHeight + (isTitle ? 10 : 5); // Larger gap after title
+      };
+
+      // Render the resume title separately
+      const titleElement = element.querySelector(".resume-title");
+      if (titleElement) {
+        await renderElement(titleElement, true);
       }
 
+      // Render each section
+      const sections = Array.from(element.querySelectorAll(".resume-section"));
+      for (const section of sections) {
+        await renderElement(section);
+      }
+
+      // Save the PDF
       pdf.save(`${resume.title || rt("resumeTitle")}.pdf`);
       setAlert({
         show: true,
@@ -140,7 +182,6 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
     setVisibility((prev) => ({ ...prev, [section]: !prev[section] }));
   }, []);
 
-  // Resume-specific translation function
   const rt = (key) => getTranslation(resume.language || "en", key);
 
   if (loading) {
@@ -203,11 +244,11 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
         ref={resumeRef}
       >
         <Card.Body>
-          <h1 style={selectedTemplate.title}>
+          <h1 className="resume-title" style={selectedTemplate.title}>
             {resume.title || rt("resumeTitle")}
           </h1>
           {visibility.personalInfo && (
-            <div style={selectedTemplate.section}>
+            <div className="resume-section" style={selectedTemplate.section}>
               <h5 style={selectedTemplate.heading}>
                 <FontAwesomeIcon icon={faUser} className="me-2" />
                 {rt("personalInfo")}
@@ -248,7 +289,7 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
             </div>
           )}
           {visibility.summary && resume.summary && (
-            <div style={selectedTemplate.section}>
+            <div className="resume-section" style={selectedTemplate.section}>
               <h5 style={selectedTemplate.heading}>
                 <FontAwesomeIcon icon={faBook} className="me-2" />
                 {rt("professionalSummary")}
@@ -257,7 +298,7 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
             </div>
           )}
           {visibility.education && resume.education.length > 0 && (
-            <div style={selectedTemplate.section}>
+            <div className="resume-section" style={selectedTemplate.section}>
               <h5 style={selectedTemplate.heading}>
                 <FontAwesomeIcon icon={faBook} className="me-2" />
                 {rt("education")}
@@ -281,7 +322,7 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
             </div>
           )}
           {visibility.experience && resume.experience.length > 0 && (
-            <div style={selectedTemplate.section}>
+            <div className="resume-section" style={selectedTemplate.section}>
               <h5 style={selectedTemplate.heading}>
                 <FontAwesomeIcon icon={faBriefcase} className="me-2" />
                 {rt("experience")}
@@ -301,7 +342,7 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
             </div>
           )}
           {visibility.skills && resume.skills.length > 0 && (
-            <div style={selectedTemplate.section}>
+            <div className="resume-section" style={selectedTemplate.section}>
               <h5 style={selectedTemplate.heading}>
                 <FontAwesomeIcon icon={faTools} className="me-2" />
                 {rt("skills")}
@@ -316,7 +357,7 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
             </div>
           )}
           {visibility.certifications && resume.certifications.length > 0 && (
-            <div style={selectedTemplate.section}>
+            <div className="resume-section" style={selectedTemplate.section}>
               <h5 style={selectedTemplate.heading}>
                 <FontAwesomeIcon icon={faCertificate} className="me-2" />
                 {rt("certifications")}
@@ -329,7 +370,7 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
             </div>
           )}
           {visibility.projects && resume.projects.length > 0 && (
-            <div style={selectedTemplate.section}>
+            <div className="resume-section" style={selectedTemplate.section}>
               <h5 style={selectedTemplate.heading}>
                 <FontAwesomeIcon icon={faProjectDiagram} className="me-2" />
                 {rt("projects")}
