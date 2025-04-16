@@ -79,21 +79,16 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
       const margin = 10; // Margin in mm
       let currentY = margin; // Current vertical position
 
-      // Refactored to reduce omitted height by tightening space checks
-      const hasEnoughSpace = (sectionHeight, isHeading = false) => {
-        const buffer = isHeading ? 2 : 5; // Reduced buffer for non-headings
-        return currentY + sectionHeight + buffer <= pageHeight - margin;
+      const hasEnoughSpace = (totalHeight) => {
+        return currentY + totalHeight + 5 <= pageHeight - margin;
       };
 
-      // Helper function to add a new page
       const addNewPage = () => {
         pdf.addPage();
         currentY = margin;
       };
 
-      // Helper function to render an element to canvas and add to PDF
-      const renderElement = async (el, isTitle = false) => {
-        // Temporarily adjust styling for PDF rendering
+      const renderElement = async (el) => {
         const originalStyle = el.style.cssText;
         el.style.width = `${imgWidth - 2 * margin}mm`;
         el.style.boxSizing = "border-box";
@@ -105,28 +100,11 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
           windowWidth: (imgWidth - 2 * margin) * 3.78,
         });
 
-        // Restore original styling
         el.style.cssText = originalStyle;
 
         const imgData = canvas.toDataURL("image/jpeg", 0.85);
         const imgHeight =
           (canvas.height * (imgWidth - 2 * margin)) / canvas.width;
-
-        // Check if the element is a heading
-        const isHeading =
-          el.classList.contains("resume-title") ||
-          el.classList.contains("resume-section") ||
-          el.tagName.toLowerCase() === "h5";
-
-        // Dynamic spacing based on element type
-        const spacing = isTitle ? 8 : isHeading ? 6 : 3; // Reduced spacing
-
-        // Force a page break for headings if there's not enough space
-        if (isHeading && !hasEnoughSpace(imgHeight, true)) {
-          addNewPage();
-        } else if (!hasEnoughSpace(imgHeight, false)) {
-          addNewPage();
-        }
 
         pdf.addImage(
           imgData,
@@ -139,11 +117,9 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
           "FAST"
         );
 
-        currentY += imgHeight + spacing;
         return imgHeight;
       };
 
-      // Render each section and its children with page break checks
       const sections = Array.from(
         element.querySelectorAll(".resume-title, .resume-section")
       );
@@ -152,44 +128,105 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
         const isTitle =
           index === 0 && section.classList.contains("resume-title");
 
-        // Get all child elements within the section
-        const children = isTitle ? [section] : Array.from(section.children);
+        if (isTitle) {
+          const titleHeight = await renderElement(section);
+          currentY += titleHeight + 8;
+          continue;
+        }
 
-        for (const child of children) {
-          // Skip empty or hidden elements
-          if (!child.offsetHeight) continue;
+        const heading = section.querySelector("h5");
+        const contentElements = Array.from(section.children).filter(
+          (child) => child !== heading
+        );
 
-          // Temporarily isolate the child for accurate height calculation
-          const originalDisplay = child.style.display;
-          const originalPosition = child.style.position;
-          child.style.display = "block";
-          child.style.position = "absolute";
+        if (heading) {
+          // Temporarily isolate heading for height calculation
+          const originalDisplay = heading.style.display;
+          const originalPosition = heading.style.position;
+          heading.style.display = "block";
+          heading.style.position = "absolute";
 
-          const canvas = await html2canvas(child, {
+          const headingCanvas = await html2canvas(heading, {
             scale: 2,
             useCORS: true,
             logging: false,
             windowWidth: (imgWidth - 2 * margin) * 3.78,
           });
 
-          // Restore original styles
-          child.style.display = originalDisplay;
-          child.style.position = originalPosition;
+          heading.style.display = originalDisplay;
+          heading.style.position = originalPosition;
 
-          const childHeight =
-            (canvas.height * (imgWidth - 2 * margin)) / canvas.width;
+          const headingHeight =
+            (headingCanvas.height * (imgWidth - 2 * margin)) /
+            headingCanvas.width;
 
-          // Check if this child would exceed page height
-          if (!hasEnoughSpace(childHeight, section === child)) {
+          // Calculate total content height
+          let contentHeight = 0;
+          for (const child of contentElements) {
+            if (!child.offsetHeight) continue;
+
+            const childOriginalDisplay = child.style.display;
+            const childOriginalPosition = child.style.position;
+            child.style.display = "block";
+            child.style.position = "absolute";
+
+            const childCanvas = await html2canvas(child, {
+              scale: 2,
+              useCORS: true,
+              logging: false,
+              windowWidth: (imgWidth - 2 * margin) * 3.78,
+            });
+
+            child.style.display = childOriginalDisplay;
+            child.style.position = childOriginalPosition;
+
+            contentHeight +=
+              (childCanvas.height * (imgWidth - 2 * margin)) /
+              childCanvas.width;
+          }
+
+          // Check if heading + content fits on the current page
+          const totalSectionHeight = headingHeight + contentHeight + 6; // 6mm spacing
+          if (!hasEnoughSpace(totalSectionHeight)) {
             addNewPage();
           }
 
-          // Render the child
-          await renderElement(child, isTitle && child === section);
+          // Render heading
+          const renderedHeadingHeight = await renderElement(heading);
+          currentY += renderedHeadingHeight + 3; // Reduced spacing after heading
+        }
+
+        // Render content elements
+        for (const child of contentElements) {
+          if (!child.offsetHeight) continue;
+
+          const childOriginalDisplay = child.style.display;
+          const childOriginalPosition = child.style.position;
+          child.style.display = "block";
+          child.style.position = "absolute";
+
+          const childCanvas = await html2canvas(child, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            windowWidth: (imgWidth - 2 * margin) * 3.78,
+          });
+
+          child.style.display = childOriginalDisplay;
+          child.style.position = childOriginalPosition;
+
+          const childHeight =
+            (childCanvas.height * (imgWidth - 2 * margin)) / childCanvas.width;
+
+          if (!hasEnoughSpace(childHeight)) {
+            addNewPage();
+          }
+
+          const renderedChildHeight = await renderElement(child);
+          currentY += renderedChildHeight + 3;
         }
       }
 
-      // Save the PDF
       pdf.save(`${resume.title || rt("resumeTitle")}.pdf`);
       setAlert({
         show: true,
