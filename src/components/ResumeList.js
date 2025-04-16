@@ -19,11 +19,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPlus,
   faEdit,
-  faEye,
   faCopy,
   faTrash,
   faSearch,
   faSort,
+  faDownload,
 } from "@fortawesome/free-solid-svg-icons";
 import { useLanguage } from "../context/LanguageContext";
 
@@ -209,8 +209,8 @@ const ResumeList = ({ user }) => {
                         size="sm"
                         onClick={() => navigate(`/preview/${resume.docId}`)}
                       >
-                        <FontAwesomeIcon icon={faEye} className="me-1" />
-                        {t("preview")}
+                        <FontAwesomeIcon icon={faDownload} className="me-1" />
+                        {t("download")}
                       </Button>
                       <Button
                         variant="outline-success"

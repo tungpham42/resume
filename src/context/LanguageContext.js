@@ -96,6 +96,7 @@ const translations = {
     english: "English",
     vietnamese: "Vietnamese",
     summary: "Summary",
+    download: "Download",
   },
   vi: {
     signIn: "Đăng Nhập",
@@ -192,6 +193,7 @@ const translations = {
     english: "Tiếng Anh",
     vietnamese: "Tiếng Việt",
     summary: "Tóm Tắt",
+    download: "Tải Về",
   },
 };
 

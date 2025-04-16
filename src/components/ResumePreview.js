@@ -79,9 +79,10 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
       const margin = 10; // Margin in mm
       let currentY = margin; // Current vertical position
 
-      // Helper function to check if there's enough space on the current page
-      const hasEnoughSpace = (sectionHeight) => {
-        return currentY + sectionHeight <= pageHeight - margin;
+      // Refactored to reduce omitted height by tightening space checks
+      const hasEnoughSpace = (sectionHeight, isHeading = false) => {
+        const buffer = isHeading ? 2 : 5; // Reduced buffer for non-headings
+        return currentY + sectionHeight + buffer <= pageHeight - margin;
       };
 
       // Helper function to add a new page
@@ -111,8 +112,19 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
         const imgHeight =
           (canvas.height * (imgWidth - 2 * margin)) / canvas.width;
 
-        // Check if the section height exceeds the remaining page height
-        if (!hasEnoughSpace(imgHeight)) {
+        // Check if the element is a heading
+        const isHeading =
+          el.classList.contains("resume-title") ||
+          el.classList.contains("resume-section") ||
+          el.tagName.toLowerCase() === "h5";
+
+        // Dynamic spacing based on element type
+        const spacing = isTitle ? 8 : isHeading ? 6 : 3; // Reduced spacing
+
+        // Force a page break for headings if there's not enough space
+        if (isHeading && !hasEnoughSpace(imgHeight, true)) {
+          addNewPage();
+        } else if (!hasEnoughSpace(imgHeight, false)) {
           addNewPage();
         }
 
@@ -127,7 +139,7 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
           "FAST"
         );
 
-        currentY += imgHeight + (isTitle ? 10 : 5);
+        currentY += imgHeight + spacing;
         return imgHeight;
       };
 
@@ -168,7 +180,7 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
             (canvas.height * (imgWidth - 2 * margin)) / canvas.width;
 
           // Check if this child would exceed page height
-          if (!hasEnoughSpace(childHeight)) {
+          if (!hasEnoughSpace(childHeight, section === child)) {
             addNewPage();
           }
 
