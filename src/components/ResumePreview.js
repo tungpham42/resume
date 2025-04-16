@@ -62,25 +62,6 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
     }
   }, [user, resumeId, resumeProp, isPreview, t]);
 
-  const handleResize = useCallback(() => {}, []);
-
-  useEffect(() => {
-    let resizeTimeout;
-    const observer = new ResizeObserver(() => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(handleResize, 100);
-    });
-
-    if (resumeRef.current) {
-      observer.observe(resumeRef.current);
-    }
-
-    return () => {
-      observer.disconnect();
-      clearTimeout(resizeTimeout);
-    };
-  }, [handleResize]);
-
   const handleDownloadPDF = async () => {
     const element = resumeRef.current;
     if (!element) return;
@@ -117,11 +98,10 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
         el.style.boxSizing = "border-box";
 
         const canvas = await html2canvas(el, {
-          scale: 2, // Higher scale for clarity
+          scale: 2,
           useCORS: true,
-          backgroundColor: "#ffffff",
           logging: false,
-          windowWidth: (imgWidth - 2 * margin) * 3.78, // Approximate pixel conversion
+          windowWidth: (imgWidth - 2 * margin) * 3.78,
         });
 
         // Restore original styling
@@ -131,7 +111,8 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
         const imgHeight =
           (canvas.height * (imgWidth - 2 * margin)) / canvas.width;
 
-        if (!hasEnoughSpace(imgHeight) && !isTitle) {
+        // Check if the section height exceeds the remaining page height
+        if (!hasEnoughSpace(imgHeight)) {
           addNewPage();
         }
 
@@ -146,19 +127,54 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
           "FAST"
         );
 
-        currentY += imgHeight + (isTitle ? 10 : 5); // Larger gap after title
+        currentY += imgHeight + (isTitle ? 10 : 5);
+        return imgHeight;
       };
 
-      // Render the resume title separately
-      const titleElement = element.querySelector(".resume-title");
-      if (titleElement) {
-        await renderElement(titleElement, true);
-      }
+      // Render each section and its children with page break checks
+      const sections = Array.from(
+        element.querySelectorAll(".resume-title, .resume-section")
+      );
 
-      // Render each section
-      const sections = Array.from(element.querySelectorAll(".resume-section"));
-      for (const section of sections) {
-        await renderElement(section);
+      for (const [index, section] of sections.entries()) {
+        const isTitle =
+          index === 0 && section.classList.contains("resume-title");
+
+        // Get all child elements within the section
+        const children = isTitle ? [section] : Array.from(section.children);
+
+        for (const child of children) {
+          // Skip empty or hidden elements
+          if (!child.offsetHeight) continue;
+
+          // Temporarily isolate the child for accurate height calculation
+          const originalDisplay = child.style.display;
+          const originalPosition = child.style.position;
+          child.style.display = "block";
+          child.style.position = "absolute";
+
+          const canvas = await html2canvas(child, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            windowWidth: (imgWidth - 2 * margin) * 3.78,
+          });
+
+          // Restore original styles
+          child.style.display = originalDisplay;
+          child.style.position = originalPosition;
+
+          const childHeight =
+            (canvas.height * (imgWidth - 2 * margin)) / canvas.width;
+
+          // Check if this child would exceed page height
+          if (!hasEnoughSpace(childHeight)) {
+            addNewPage();
+          }
+
+          // Render the child
+          await renderElement(child, isTitle && child === section);
+        }
       }
 
       // Save the PDF
