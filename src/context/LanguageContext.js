@@ -106,7 +106,7 @@ const translations = {
     signInWithGoogle: "Đăng nhập bằng Google",
     alreadyHaveAccount: "Đã có tài khoản? Đăng Nhập",
     needAccount: "Cần tài khoản? Đăng Ký",
-    resumeBuilder: "Xây Dựng Sơ Yếu Lý Lịch",
+    resumeBuilder: "Trình Tạo Sơ Yếu Lý Lịch",
     myResumes: "Sơ Yếu Lý Lịch Của Tôi",
     createResume: "Tạo Sơ Yếu Lý Lịch",
     editResume: "Chỉnh Sửa Sơ Yếu Lý Lịch",
