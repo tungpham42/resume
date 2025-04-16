@@ -6,6 +6,7 @@ import Auth from "./components/Auth";
 import ResumeForm from "./components/ResumeForm";
 import ResumePreview from "./components/ResumePreview";
 import ResumeList from "./components/ResumeList";
+import Footer from "./components/Footer";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -52,6 +53,7 @@ function App() {
           }
         />
       </Routes>
+      <Footer />
     </Router>
   );
 }
