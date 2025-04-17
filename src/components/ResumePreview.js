@@ -134,6 +134,38 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
           continue;
         }
 
+        const isSkillsSection = section.classList.contains("skills-section");
+
+        if (isSkillsSection) {
+          // Treat the entire skills section (heading + list) as a single unit
+          const originalDisplay = section.style.display;
+          const originalPosition = section.style.position;
+          section.style.display = "block";
+          section.style.position = "absolute";
+
+          const sectionCanvas = await html2canvas(section, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            windowWidth: (imgWidth - 2 * margin) * 3.78,
+          });
+
+          section.style.display = originalDisplay;
+          section.style.position = originalPosition;
+
+          const sectionHeight =
+            (sectionCanvas.height * (imgWidth - 2 * margin)) /
+            sectionCanvas.width;
+
+          if (!hasEnoughSpace(sectionHeight)) {
+            addNewPage();
+          }
+
+          const renderedHeight = await renderElement(section);
+          currentY += renderedHeight + 3;
+          continue;
+        }
+
         const heading = section.querySelector("h5");
         const contentElements = Array.from(section.children).filter(
           (child) => child !== heading
@@ -402,14 +434,29 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
             </div>
           )}
           {visibility.skills && resume.skills && (
-            <div className="resume-section" style={selectedTemplate.section}>
-              <h5 style={selectedTemplate.heading}>
-                <FontAwesomeIcon icon={faTools} className="me-2" />
-                {rt("skills")}
-              </h5>
-              <pre style={{ ...selectedTemplate.text, whiteSpace: "pre-wrap" }}>
-                {resume.skills}
-              </pre>
+            <div
+              className="resume-section skills-section"
+              style={selectedTemplate.section}
+            >
+              <div>
+                <h5 style={selectedTemplate.heading}>
+                  <FontAwesomeIcon icon={faTools} className="me-2" />
+                  {rt("skills")}
+                </h5>
+                <ul style={selectedTemplate.text}>
+                  {resume.skills.split(/[\n,]+/).map((skill, index) => (
+                    <li
+                      key={index}
+                      style={{
+                        ...selectedTemplate.text,
+                        marginBottom: "0.5em",
+                      }}
+                    >
+                      {skill.trim()}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           )}
           {visibility.certifications && resume.certifications.length > 0 && (
