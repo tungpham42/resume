@@ -74,10 +74,10 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
         compress: true,
       });
 
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
-      const margin = 10; // Margin in mm
-      let currentY = margin; // Current vertical position
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const margin = 10;
+      let currentY = margin;
 
       const hasEnoughSpace = (totalHeight) => {
         return currentY + totalHeight + 5 <= pageHeight - margin;
@@ -140,7 +140,6 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
         );
 
         if (heading) {
-          // Temporarily isolate heading for height calculation
           const originalDisplay = heading.style.display;
           const originalPosition = heading.style.position;
           heading.style.display = "block";
@@ -160,7 +159,6 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
             (headingCanvas.height * (imgWidth - 2 * margin)) /
             headingCanvas.width;
 
-          // Calculate total content height
           let contentHeight = 0;
           for (const child of contentElements) {
             if (!child.offsetHeight) continue;
@@ -185,18 +183,15 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
               childCanvas.width;
           }
 
-          // Check if heading + content fits on the current page
-          const totalSectionHeight = headingHeight + contentHeight + 6; // 6mm spacing
+          const totalSectionHeight = headingHeight + contentHeight + 6;
           if (!hasEnoughSpace(totalSectionHeight)) {
             addNewPage();
           }
 
-          // Render heading
           const renderedHeadingHeight = await renderElement(heading);
-          currentY += renderedHeadingHeight + 3; // Reduced spacing after heading
+          currentY += renderedHeadingHeight + 3;
         }
 
-        // Render content elements
         for (const child of contentElements) {
           if (!child.offsetHeight) continue;
 
@@ -406,19 +401,15 @@ const ResumePreview = ({ user, resume: resumeProp, isPreview = false }) => {
               ))}
             </div>
           )}
-          {visibility.skills && resume.skills.length > 0 && (
+          {visibility.skills && resume.skills && (
             <div className="resume-section" style={selectedTemplate.section}>
               <h5 style={selectedTemplate.heading}>
                 <FontAwesomeIcon icon={faTools} className="me-2" />
                 {rt("skills")}
               </h5>
-              <ul>
-                {resume.skills.map((skill, index) => (
-                  <li key={index} style={selectedTemplate.text}>
-                    {skill}
-                  </li>
-                ))}
-              </ul>
+              <pre style={{ ...selectedTemplate.text, whiteSpace: "pre-wrap" }}>
+                {resume.skills}
+              </pre>
             </div>
           )}
           {visibility.certifications && resume.certifications.length > 0 && (

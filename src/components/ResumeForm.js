@@ -62,7 +62,7 @@ const initialResumeState = {
       description: "",
     },
   ],
-  skills: [],
+  skills: "", // Changed from array to string to preserve new lines
   certifications: [{ name: "", issuer: "", date: "" }],
   projects: [{ name: "", description: "", url: "" }],
   customSections: [],
@@ -82,7 +82,7 @@ const initialResumeState = {
 };
 
 const ResumeForm = ({ user }) => {
-  const { t, getTranslation } = useLanguage(); // Use t for website UI, getTranslation for resume
+  const { t, getTranslation } = useLanguage();
   const { resumeId } = useParams();
   const navigate = useNavigate();
   const isNew = resumeId === "new";
@@ -171,13 +171,7 @@ const ResumeForm = ({ user }) => {
     (section, index, field, value) => {
       setResume((prev) => {
         if (!section) {
-          return section === "skills"
-            ? { ...prev, skills: value }
-            : { ...prev, [field]: value };
-        }
-
-        if (section === "skills") {
-          return { ...prev, skills: value };
+          return { ...prev, [field]: value };
         }
 
         return [
@@ -269,7 +263,6 @@ const ResumeForm = ({ user }) => {
     }
   };
 
-  // Translation function for resume-specific language
   const rt = (key) => getTranslation(resume.language || "en", key);
 
   return (
@@ -302,7 +295,6 @@ const ResumeForm = ({ user }) => {
               <p>{t("loading")}</p>
             ) : (
               <Form onSubmit={handleSubmit}>
-                {/* Resume Language Selector */}
                 <Form.Group className="mb-3">
                   <Form.Label>{rt("resumeLanguage")}</Form.Label>
                   <Form.Select
@@ -315,8 +307,6 @@ const ResumeForm = ({ user }) => {
                     <option value="vi">{rt("vietnamese")}</option>
                   </Form.Select>
                 </Form.Group>
-
-                {/* Resume Title */}
                 <h3 className="mb-3">{rt("resumeTitle")}</h3>
                 <Form.Group className="mb-3">
                   <Form.Label>
@@ -333,8 +323,6 @@ const ResumeForm = ({ user }) => {
                     required
                   />
                 </Form.Group>
-
-                {/* Personal Information */}
                 <h3 className="mb-3">{rt("personalInfo")}</h3>
                 <Form.Group className="mb-3">
                   <Form.Label>
@@ -441,8 +429,6 @@ const ResumeForm = ({ user }) => {
                     }
                   />
                 </Form.Group>
-
-                {/* Professional Summary */}
                 <h3 className="mb-3">{rt("professionalSummary")}</h3>
                 <Form.Group className="mb-3">
                   <Form.Label>
@@ -458,8 +444,6 @@ const ResumeForm = ({ user }) => {
                     }
                   />
                 </Form.Group>
-
-                {/* Education */}
                 <h3 className="mb-3">{rt("education")}</h3>
                 {resume.education.map((edu, index) => (
                   <Card key={index} className="mb-3 p-3">
@@ -577,8 +561,6 @@ const ResumeForm = ({ user }) => {
                   <FontAwesomeIcon icon={faPlus} className="me-2" />
                   {rt("addEducation")}
                 </Button>
-
-                {/* Experience */}
                 <h3 className="mb-3">{rt("experience")}</h3>
                 {resume.experience.map((exp, index) => (
                   <Card key={index} className="mb-3 p-3">
@@ -697,8 +679,6 @@ const ResumeForm = ({ user }) => {
                   <FontAwesomeIcon icon={faPlus} className="me-2" />
                   {rt("addExperience")}
                 </Button>
-
-                {/* Skills */}
                 <h3 className="mb-3">{rt("skills")}</h3>
                 <Form.Group className="mb-3">
                   <Form.Label>
@@ -708,19 +688,13 @@ const ResumeForm = ({ user }) => {
                   <Form.Control
                     as="textarea"
                     rows={3}
-                    value={resume.skills.join("\n")}
-                    onChange={(e) => {
-                      const skillsArray = e.target.value
-                        .split("\n")
-                        .map((s) => s.trim())
-                        .filter((s) => s);
-                      handleChange(null, null, "skills", skillsArray);
-                    }}
+                    value={resume.skills}
+                    onChange={(e) =>
+                      handleChange(null, null, "skills", e.target.value)
+                    }
                     placeholder={rt("skills")}
                   />
                 </Form.Group>
-
-                {/* Certifications */}
                 <h3 className="mb-3">{rt("certifications")}</h3>
                 {resume.certifications.map((cert, index) => (
                   <Card key={index} className="mb-3 p-3">
@@ -787,8 +761,6 @@ const ResumeForm = ({ user }) => {
                   <FontAwesomeIcon icon={faPlus} className="me-2" />
                   {rt("addCertification")}
                 </Button>
-
-                {/* Projects */}
                 <h3 className="mb-3">{rt("projects")}</h3>
                 {resume.projects.map((proj, index) => (
                   <Card key={index} className="mb-3 p-3">
@@ -851,8 +823,6 @@ const ResumeForm = ({ user }) => {
                   <FontAwesomeIcon icon={faPlus} className="me-2" />
                   {rt("addProject")}
                 </Button>
-
-                {/* Template */}
                 <h3 className="mb-3">{rt("template")}</h3>
                 <Form.Group className="mb-3">
                   <Form.Label>
@@ -883,8 +853,6 @@ const ResumeForm = ({ user }) => {
                     <option value="prestige">{t("template_prestige")}</option>
                   </Form.Select>
                 </Form.Group>
-
-                {/* Form Actions */}
                 <div className="d-flex gap-2 mt-4">
                   <Button
                     variant="primary"
